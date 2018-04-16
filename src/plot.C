@@ -72,11 +72,11 @@ public:
             return;
         }
 
-        //set the histogram color
-        h->SetLineColor(color);
+        //set line width, marker style, and colors
         h->SetLineWidth(3);
+        h->SetLineColor(color);
+        h->SetMarkerStyle(kFullCircle);
         h->SetMarkerColor(color);
-        h->SetMarkerStyle(20);
 
         // rebin the histogram if desired
         if(rebin > 0) h->Rebin(rebin);
@@ -199,7 +199,7 @@ public:
         data_.rebin = rebin;
         data_.retrieveHistogram();
         leg->AddEntry(data_.h.get(), data_.legEntry.c_str(), data_.drawOptions.c_str());
-        smartMax(hbgSum, leg, static_cast<TPad*>(gPad), min, max, lmax, true);
+        smartMax(data_.h.get(), leg, static_cast<TPad*>(gPad), min, max, lmax, true);
 
         //background
         for(auto& entry : bgEntries_)
@@ -340,16 +340,22 @@ public:
         ratio.h->GetYaxis()->SetTitle("Data / BG");
         ratio.h->GetXaxis()->SetTickLength(0.1);
         ratio.h->GetYaxis()->SetTickLength(0.045);
+
+        // use SetRangeUser to set axis ranges
+        if(xmin < xmax) ratio.h->GetXaxis()->SetRangeUser(xmin, xmax);
+        ratio.h->GetYaxis()->SetRangeUser(0.5,1.5);
+        
         ratio.setupAxes(1.2, 0.4, 0.15, 0.15, 0.13, 0.13);
         ratio.h->GetYaxis()->SetNdivisions(6, 5, 0);
 
-        //ratio.h->SetLineColor(kBlack);
-        ratio.h->SetMinimum(0.5);
-        ratio.h->SetMaximum(1.5);
+        // set line style
+        ratio.h->SetLineWidth(3);
+        ratio.h->SetLineColor(kBlack);
+        ratio.h->SetMarkerStyle(kFullCircle);
+        ratio.h->SetMarkerColor(kBlack);
         ratio.h->Sumw2();
         ratio.h->SetStats(0);
         ratio.h->Divide(hbgSum);
-        ratio.h->SetMarkerStyle(21);
         ratio.draw();
 
         //save new plot to file
